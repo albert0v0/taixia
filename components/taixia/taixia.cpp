@@ -78,12 +78,28 @@ static const uint8_t RESPONSE_LENGTH = 255;
   bool TaiXia::write_command_(const uint8_t *command, uint8_t *response, uint8_t len, uint8_t rlen) {
     return this->write_command_(command, response, len, rlen, 6000);
   }
-
+  //Albert Start
+  void TaiXia::wait_for_response_(uint32_t timeout_ms) {
+    uint32_t wait_start = millis();
+    while (!available()) {
+      if (millis() - wait_start > timeout_ms) {
+        ESP_LOGE(TAG, "response timeout!");
+        delay(50);
+        while (this->available()) {
+          uint8_t discard;
+          this->read_byte(&discard);
+        }
+        return;
+      }
+    }
+}
+  //Alber End
   void TaiXia::get_info_() {
     uint8_t i;
     this->buffer_.clear();
 
     this->send(6, 0, 0x00, SERVICE_ID_READ_VERSION, 0xFFFF);
+    this->wait_for_response_(500);  //Albert Add
     this->readline(false);
 
     if ((this->buffer_[0] >= 0x0) && (this->buffer_[1] == 0x0) && (this->buffer_[2] == SERVICE_ID_READ_VERSION)) {
@@ -99,6 +115,7 @@ static const uint8_t RESPONSE_LENGTH = 255;
     if (this->response_time_ != 0) {
       delayMicroseconds(this->response_time_);
     }
+    this->wait_for_response_(500);  //Albert Add
     this->readline(false);
 
     if ((this->buffer_[0] >= 0x0) && (this->buffer_[1] == 0x0) && (this->buffer_[2] == SERVICE_ID_READ_SA_ID)) {
@@ -117,6 +134,7 @@ static const uint8_t RESPONSE_LENGTH = 255;
     if (this->response_time_ != 0) {
       delayMicroseconds(this->response_time_);
     }
+    this->wait_for_response_(500);  //Albert Add
     this->readline(false);
 
     if ((this->buffer_[0] >= 0x0) && (this->buffer_[1] == 0x0) && (this->buffer_[2] == SERVICE_ID_READ_BRAND)) {
@@ -138,6 +156,7 @@ static const uint8_t RESPONSE_LENGTH = 255;
     if (this->response_time_ != 0) {
       delayMicroseconds(this->response_time_);
     }
+    this->wait_for_response_(500);  //Albert Add
     this->readline(false);
 
     if ((this->buffer_[0] >= 0x0) && (this->buffer_[1] == 0x0) && (this->buffer_[2] == SERVICE_ID_READ_MODEL)) {
@@ -159,6 +178,7 @@ static const uint8_t RESPONSE_LENGTH = 255;
     if (this->response_time_ != 0) {
       delayMicroseconds(this->response_time_);
     }
+    this->wait_for_response_(500);  //Albert Add
     this->readline(false);
 
     uint8_t len = this->buffer_[0];
@@ -198,6 +218,7 @@ static const uint8_t RESPONSE_LENGTH = 255;
       return;
 
     this->send(6, 0, 0x00, SERVICE_ID_REGISTER, 0xFFFF);
+    this->wait_for_response_(500);  //Albert Add
     this->readline(false);
 
 //    uint8_t crc = this->checksum(this->buffer_, this->buffer_[0] - 1);
