@@ -52,6 +52,15 @@ static const uint8_t RESPONSE_LENGTH = 255;
         timeout--;
         if (timeout == 0) {
             ESP_LOGE(TAG, "command timeout!");
+            //Albert Start
+            // 逾時放棄前，多等一小段時間，把遲到的殘留回應讀掉丟棄，
+            // 避免它污染下一個指令的讀取
+            delay(50);
+            while (this->available()) {
+              uint8_t discard;
+              this->read_byte(&discard);
+            }
+            //Albert end
             return false;
         }
       }
