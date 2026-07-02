@@ -29,6 +29,19 @@ static const uint8_t RESPONSE_LENGTH = 255;
     if (response == nullptr)
       return true;
 
+    //Albert Start
+    // 送出新指令前，先清空 RX 緩衝區裡的殘留資料，
+    // 避免前一個指令逾時未讀完的 byte 污染這次的回應解析
+    uint8_t discard;
+    uint16_t discarded = 0;
+    while (this->available() && discarded < 255) {
+      this->read_byte(&discard);
+      discarded++;
+    }
+    if (discarded > 0) {
+      ESP_LOGW(TAG, "discarded %d stale bytes before sending command", discarded);
+    }
+    //Albert end
     this->flush();
 
     this->write_array(command, len);
