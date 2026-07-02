@@ -345,6 +345,8 @@ class TaiXia : public uart::UARTDevice, public Component {
 
   bool write_command_(const uint8_t *command, uint8_t *response, uint8_t len, uint8_t tlen, uint32_t timeout);
   bool write_command_(const uint8_t *command, uint8_t *response, uint8_t len, uint8_t tlen);
+  void wait_for_data_();
+
 };
 
 }  // namespace taixia
