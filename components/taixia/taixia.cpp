@@ -48,13 +48,12 @@ static const uint8_t RESPONSE_LENGTH = 255;
 
     if (this->response_time_ != 0) {
       delayMicroseconds(this->response_time_);
-      while (!available() && timeout > 0) {
-        timeout--;
-        if (timeout == 0) {
+      //Albert Start
+      uint32_t wait_start = millis();
+      while (!available()) {
+        if (millis() - wait_start > 500) {   // 500ms 真實等待時間，不再受 CPU 忙碌影響
             ESP_LOGE(TAG, "command timeout!");
-            //Albert Start
-            // 逾時放棄前，多等一小段時間，把遲到的殘留回應讀掉丟棄，
-            // 避免它污染下一個指令的讀取
+            // 逾時放棄前，多等一下把遲到的回應清掉丟棄，避免污染下一次讀取
             delay(50);
             while (this->available()) {
               uint8_t discard;
